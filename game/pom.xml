@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.group5.game</groupId>
+  <artifactId>game</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>Desktop</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>15</maven.compiler.source>
+    <maven.compiler.target>15</maven.compiler.target>
+    <mainClass>com.group5.game.App</mainClass>
+  </properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- core dependencies -->
+			<dependency>
+				<groupId>com.badlogicgames.gdx</groupId>
+				<artifactId>gdx</artifactId>
+				<version>1.2.0</version>
+			</dependency>
+
+			<!-- desktop-specific dependencies -->
+			<dependency>
+				<groupId>com.badlogicgames.gdx</groupId>
+				<artifactId>gdx-backend-lwjgl</artifactId>
+				<version>1.2.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.badlogicgames.gdx</groupId>
+				<artifactId>gdx-platform</artifactId>
+				<version>1.2.0</version>
+				<classifier>natives-desktop</classifier>
+			</dependency>
+
+			<dependency>
+				<groupId>com.badlogicgames.gdx</groupId>
+				<artifactId>gdx-platform</artifactId>
+				<version>1.2.0</version>
+				<classifier>natives-armeabi-v7a</classifier>
+				<scope>provided</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<repositories>
+		<repository>
+			<id>gdx-nightlies</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<id>gdx-releases</id>
+			<url>https://oss.sonatype.org/content/repositories/releases/</url>
+		</repository>
+	</repositories>
+
+  <dependencies>
+      <!-- Testing -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+
+	<dependency>
+		<groupId>com.badlogicgames.gdx</groupId>
+		<artifactId>gdx-backend-headless</artifactId>
+		<version>1.9.14</version>
+		<scope>test</scope>
+	</dependency>
+
+    <!-- libGDX core dependencies -->
+    <dependency>
+      <groupId>com.badlogicgames.gdx</groupId>
+      <artifactId>gdx</artifactId>
+      <version>1.9.14</version>
+    </dependency>
+  
+    <!-- libGDX desktop-specific dependencies -->
+			<dependency>
+				<groupId>com.badlogicgames.gdx</groupId>
+				<artifactId>gdx-backend-lwjgl</artifactId>
+        <version>1.9.14</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.badlogicgames.gdx</groupId>
+				<artifactId>gdx-platform</artifactId>
+				<classifier>natives-desktop</classifier>
+        <version>1.9.14</version>
+			</dependency>
+
+      <dependency>
+				<groupId>com.badlogicgames.gdx</groupId>
+				<artifactId>gdx-platform</artifactId>
+				<classifier>natives-armeabi-v7a</classifier>
+        <version>1.9.14</version>
+				<scope>provided</scope>
+			</dependency>
+  </dependencies>
+
+  <build>
+
+		<resources>
+			<resource>
+				<directory>src/assets</directory>
+			</resource>
+		</resources>
+
+    <plugins>
+			
+      <!-- compiler -->
+      <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+			</plugin>
+
+      <!-- this runs the game when you invoke: mvn integration-test -->
+			<plugin>
+				<groupId>com.googlecode.mavennatives</groupId>
+				<artifactId>maven-nativedependencies-plugin</artifactId>
+				<version>0.0.6</version>
+				<executions>
+					<execution>
+						<id>unpacknatives</id>
+						<phase>pre-integration-test</phase>
+						<goals><goal>copy</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>integration-test</phase>
+						<configuration>
+							<target>
+								<java fork="true" classname="${mainClass}" classpathref="maven.test.classpath">
+									<sysproperty key="java.library.path" value="target/natives"/>
+								</java>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- this builds a totally standalone jar file when you invoke: mvn package -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+						<manifest>
+							<mainClass>${mainClass}</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+      <!-- this makes a javadoc -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
+          <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
+          <additionalJOptions>
+            <additionalJOption>-Xdoclint:all</additionalJOption>
+            <additionalJOption>-Xdoclint:-missing</additionalJOption>
+          </additionalJOptions>
+        </configuration>
+      </plugin>
+
+    </plugins>
+
+  </build>
+  
+</project>
